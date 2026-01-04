@@ -5,7 +5,7 @@
 
 # ==== CONFIG ====
 # Target binary name
-TARGET_EXEC := main
+TARGET_EXEC := solve
 # Enable this line to compile to a shared object (.so) instead of a binary
 TARGET_LIBRARY := off
 # If "debug", will add debug symbols, "release" removes symbols.

@@ -52,4 +52,5 @@ void scramble(void)
 		apply_move(cube, move);
 		print_move(move);
 	}
+	printf("\n");
 }

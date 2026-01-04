@@ -24,7 +24,6 @@ typedef int (*stage_t)(void);
 static struct cube *cube;
 
 stage_t main_stages[] = {
-	secnd_edge_solved,
 	cross_solved,
 	first_pair_solved,
 	secnd_pair_solved,
@@ -33,8 +32,7 @@ stage_t main_stages[] = {
 };
 
 int main_max_depth[] = {
-	5,
-	5,
+	7,
 	7,
 	7,
 	7,
