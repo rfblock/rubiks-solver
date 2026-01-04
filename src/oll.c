@@ -1,0 +1,229 @@
+#include <stdio.h>
+#include "oll.h"
+
+// https://jperm.net/algs/oll
+const unsigned int oll_cases[] = {
+	0b111111111'000'000'000'000, // Identity (OLL Skip)
+	0b000010000'010'111'111'010,
+	0b000010000'111'011'011'010,
+	0b000010100'110'010'110'011,
+	0b000010001'011'110'010'110,
+	0b110110000'000'001'110'011,
+	0b011011000'000'110'001'110,
+	0b010110100'100'000'110'011,
+	0b010011001'001'110'000'110,
+	0b010110001'001'100'010'110,
+	0b001110010'110'001'010'001,
+	0b011110000'100'001'010'011,
+	0b110011000'001'010'001'110,
+	0b000111100'110'000'100'011,
+	0b000111001'011'100'000'110,
+	0b100111000'010'001'100'011,
+	0b001111000'010'100'001'110,
+	0b100010001'010'010'110'110,
+	0b101010000'010'010'010'111,
+	0b101010000'010'011'011'010,
+	0b101010101'010'010'010'010,
+	0b010111010'101'000'000'101,
+	0b010111010'001'101'000'001,
+	0b010111111'101'000'000'000,
+	0b011111011'100'000'000'100,
+	0b011111110'000'100'000'001,
+	0b011111010'000'100'001'100,
+	0b010111110'100'000'100'001,
+	0b111110101'000'000'010'010,
+	0b011110001'100'000'010'110,
+	0b010110101'000'100'110'010,
+	0b011011001'100'010'000'110,
+	0b110110100'001'000'010'011,
+	0b001111001'110'000'000'110,
+	0b000111101'010'100'100'010,
+	0b100011011'010'010'100'100,
+	0b110011001'001'011'000'010,
+	0b110110001'000'000'110'110,
+	0b011110100'100'000'011'010,
+	0b001111100'110'000'001'010,
+	0b100111001'011'001'000'010,
+	0b010110101'101'000'010'010,
+	0b101110010'010'000'010'101,
+	0b011011001'000'111'000'010,
+	0b110110100'000'000'111'010,
+	0b001111001'010'101'000'010,
+	0b110010110'000'010'111'000,
+	0b010011000'100'010'101'110,
+	0b010110000'001'101'010'011,
+	0b010011000'001'111'000'011,
+	0b000011010'011'111'000'001,
+	0b000111000'110'000'101'110,
+	0b010010010'100'010'111'100,
+	0b010011000'101'010'000'111,
+	0b010110000'101'000'010'111,
+	0b000111000'111'000'000'111,
+	0b000111000'010'101'101'010,
+	0b101111101'010'000'000'010,
+};
+
+enum moves oll_algs[][16] = {
+	{ MOVE_END },
+	{ MOVE_R, MOVE_D2, MOVE_R2, MOVE_B, MOVE_R, MOVE_Bp, MOVE_D2, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Lp, MOVE_D2, MOVE_L, MOVE_B2, MOVE_Rp, MOVE_B2, MOVE_R, MOVE_Bp, MOVE_Lp, MOVE_END },
+	{ MOVE_Lp, MOVE_R2, MOVE_F, MOVE_Rp, MOVE_F, MOVE_L, MOVE_D2, MOVE_Lp, MOVE_F, MOVE_Rp, MOVE_L, MOVE_END },
+	{ MOVE_R, MOVE_Lp, MOVE_Fp, MOVE_L, MOVE_D2, MOVE_Lp, MOVE_Fp, MOVE_R, MOVE_Fp, MOVE_Rp, MOVE_Rp, MOVE_L, MOVE_END },
+	{ MOVE_Rp, MOVE_B2, MOVE_L, MOVE_B, MOVE_Lp, MOVE_B, MOVE_R, MOVE_END },
+	{ MOVE_L, MOVE_B2, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_Bp, MOVE_Lp, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Rp, MOVE_B, MOVE_R, MOVE_B2, MOVE_Lp, MOVE_END },
+	{ MOVE_Rp, MOVE_Bp, MOVE_L, MOVE_Bp, MOVE_Lp, MOVE_B2, MOVE_R, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Rp, MOVE_B, MOVE_R2, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_D, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_R, MOVE_D2, MOVE_Rp, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Rp, MOVE_B, MOVE_Rp, MOVE_U, MOVE_R, MOVE_Up, MOVE_R, MOVE_B2, MOVE_Lp, MOVE_END },
+	{ MOVE_Rp, MOVE_L, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_Bp, MOVE_Rp, MOVE_B2, MOVE_R, MOVE_Bp, MOVE_R, MOVE_Lp, MOVE_END },
+	{ MOVE_B, MOVE_D, MOVE_R, MOVE_Dp, MOVE_R2, MOVE_Bp, MOVE_R, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_END },
+	{ MOVE_Rp, MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_B, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_Lp, MOVE_Dp, MOVE_L, MOVE_D, MOVE_Rp, MOVE_B, MOVE_R, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Lp, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_L, MOVE_Bp, MOVE_Lp, MOVE_END },
+	{ MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_R2, MOVE_Lp, MOVE_F, MOVE_R, MOVE_Fp, MOVE_Rp, MOVE_Fp, MOVE_Rp, MOVE_L, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Rp, MOVE_B, MOVE_R, MOVE_B2, MOVE_L2, MOVE_Fp, MOVE_R, MOVE_Fp, MOVE_Rp, MOVE_F2, MOVE_L, MOVE_END },
+	{ MOVE_Lp, MOVE_R, MOVE_F, MOVE_R, MOVE_F, MOVE_Rp, MOVE_Fp, MOVE_Rp, MOVE_L, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_R2, MOVE_L2, MOVE_F, MOVE_R, MOVE_Fp, MOVE_Rp, MOVE_Fp, MOVE_Rp, MOVE_L, MOVE_END },
+	{ MOVE_R, MOVE_D2, MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_END },
+	{ MOVE_R, MOVE_D2, MOVE_R2, MOVE_Dp, MOVE_R2, MOVE_Dp, MOVE_R2, MOVE_D2, MOVE_R, MOVE_END },
+	{ MOVE_R2, MOVE_Up, MOVE_R, MOVE_D2, MOVE_Rp, MOVE_U, MOVE_R, MOVE_D2, MOVE_R, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_Lp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_END },
+	{ MOVE_Bp, MOVE_L, MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_Lp, MOVE_B, MOVE_R, MOVE_END },
+	{ MOVE_R, MOVE_D2, MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_D, MOVE_R, MOVE_D2, MOVE_Rp, MOVE_END },
+	{ MOVE_L, MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_Lp, MOVE_R, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_Bp, MOVE_Dp, MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_END },
+	{ MOVE_B, MOVE_Rp, MOVE_B, MOVE_R2, MOVE_Dp, MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_D, MOVE_Rp, MOVE_B2, MOVE_END },
+	{ MOVE_Rp, MOVE_Dp, MOVE_B, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_END },
+	{ MOVE_L, MOVE_D, MOVE_Bp, MOVE_Dp, MOVE_Lp, MOVE_D, MOVE_L, MOVE_B, MOVE_Lp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_R2, MOVE_Dp, MOVE_Rp, MOVE_B, MOVE_R, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_R, MOVE_D2, MOVE_R2, MOVE_B, MOVE_R, MOVE_Bp, MOVE_R, MOVE_D2, MOVE_Rp, MOVE_END },
+	{ MOVE_Lp, MOVE_Dp, MOVE_L, MOVE_Dp, MOVE_Lp, MOVE_D, MOVE_L, MOVE_D, MOVE_L, MOVE_Bp, MOVE_Lp, MOVE_B, MOVE_END },
+	{ MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_Dp, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_END },
+	{ MOVE_L, MOVE_Bp, MOVE_Lp, MOVE_Dp, MOVE_L, MOVE_D, MOVE_B, MOVE_Dp, MOVE_Lp, MOVE_END },
+	{ MOVE_Rp, MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Bp, MOVE_D, MOVE_R, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_D, MOVE_R, MOVE_D2, MOVE_Rp, MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_D2, MOVE_R, MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_Bp, MOVE_Dp, MOVE_Lp, MOVE_D, MOVE_L, MOVE_B, MOVE_END },
+	{ MOVE_B, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_Bp, MOVE_END },
+	{ MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_Rp, MOVE_Dp, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_D, MOVE_R, MOVE_END },
+	{ MOVE_Rp, MOVE_Dp, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_Rp, MOVE_B, MOVE_R, MOVE_Bp, MOVE_D, MOVE_R, MOVE_END },
+	{ MOVE_B, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Bp, MOVE_END },
+	{ MOVE_L, MOVE_Bp, MOVE_L2, MOVE_F, MOVE_L2, MOVE_B, MOVE_L2, MOVE_Fp, MOVE_L, MOVE_END },
+	{ MOVE_Lp, MOVE_F, MOVE_L2, MOVE_Bp, MOVE_L2, MOVE_Fp, MOVE_L2, MOVE_B, MOVE_Lp, MOVE_END },
+	{ MOVE_B, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_Bp, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_D, MOVE_R, MOVE_Dp, MOVE_F, MOVE_Dp, MOVE_Fp, MOVE_Rp, MOVE_END },
+	{ MOVE_Rp, MOVE_B2, MOVE_L, MOVE_B, MOVE_Lp, MOVE_Bp, MOVE_L, MOVE_B, MOVE_Lp, MOVE_B, MOVE_R, MOVE_END },
+	{ MOVE_L, MOVE_B2, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_B, MOVE_Rp, MOVE_Bp, MOVE_R, MOVE_Bp, MOVE_Lp, MOVE_END },
+	{ MOVE_Rp, MOVE_B, MOVE_R, MOVE_D, MOVE_R, MOVE_Dp, MOVE_R2, MOVE_Bp, MOVE_R2, MOVE_Dp, MOVE_Rp, MOVE_D, MOVE_R, MOVE_D, MOVE_Rp, MOVE_END },
+	{ MOVE_Lp, MOVE_Fp, MOVE_L, MOVE_Dp, MOVE_Rp, MOVE_D, MOVE_R, MOVE_Dp, MOVE_Rp, MOVE_D, MOVE_R, MOVE_Lp, MOVE_F, MOVE_L, MOVE_END },
+	{ MOVE_R, MOVE_D, MOVE_Rp, MOVE_Dp, MOVE_Rp, MOVE_L, MOVE_B, MOVE_R, MOVE_Bp, MOVE_Lp, MOVE_END },
+};
+
+const int num_cases = sizeof oll_cases / sizeof *oll_cases;
+
+/*
+	Lookup table repr
+	.  11 10 9  .
+	8  20 19 18 5
+	7  17 16 15 4
+	6  14 13 12 3
+	.  2  1  0  .
+
+	Cube model repr
+	.  24 25 26 .
+	17 45 46 47 33
+	16 48 49 50 34
+	15 51 52 53 35
+	.  44 43 42 .
+*/
+
+int stickers_lookup[] = {
+	42, 43, 44,
+	35, 34, 33,
+	15, 16, 17,
+	26, 25, 24,
+	53, 52, 51,
+	50, 49, 48,
+	47, 46, 45,
+};
+
+// Returns the ID, -1 otherwise
+int check_oll(struct cube *cube)
+{
+	for (int i = 0; i < num_cases; i++) {
+		int found = 1;
+		for (int j = 0; j < 21; j++) {
+			int should_yellow = (oll_cases[i] & (1 << j)) >> j;
+			int idx = stickers_lookup[j];
+			int is_yellow = cube->stickers[idx] >= 45;
+			if (should_yellow != is_yellow) {
+				found = 0;
+				break;
+			}
+		}
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int solve_oll(struct cube *cube)
+{
+	int id = -1;
+	int rot = 0;
+	for (; rot < 4; rot++) {
+		id = check_oll(cube);
+		if (id >= 0) { break; }
+		apply_move(cube, MOVE_D);
+	}
+
+	// printf("OLL: id %d with rotation %d\n", id, rot);
+
+	if (id < 0) { return 0; }
+	enum moves *alg = oll_algs[id];
+
+	for (int i = 0; i < rot; i++) {
+		append_move(MOVE_D);
+	}
+	for (int i = 0; alg[i] != MOVE_END; i++) {
+		append_move(alg[i]);
+		apply_move(cube, alg[i]);
+	}
+
+	return 1;
+}
+
+void verify_oll_cases(void)
+{
+	for (int i = 0; i < num_cases; i++) {
+		unsigned int c = oll_cases[i];
+		#define GET_STICKER(id) ((c & (1 << id)) >> id)
+		#define CHECK_EDGE(i1, i2) (GET_STICKER(i1) + GET_STICKER(i2) == 1)
+		#define CHECK_CORNER(i1, i2, i3) (GET_STICKER(i1) + GET_STICKER(i2) + GET_STICKER(i3) == 1)
+
+		if (!GET_STICKER(16)) {
+			printf("Missing center, id %d\n", i);
+		}
+
+		if (!CHECK_EDGE(1, 13)) { printf("1/13 Edge invalid, id %d\n", i); }
+		if (!CHECK_EDGE(4, 15)) { printf("4/15 Edge invalid, id %d\n", i); }
+		if (!CHECK_EDGE(7, 17)) { printf("7/17 Edge invalid, id %d\n", i); }
+		if (!CHECK_EDGE(10, 19)) { printf("10/19 Edge invalid, id %d\n", i); }
+
+		if (!CHECK_CORNER(0, 3, 12)) { printf("0/3/12 Corner invalid, id %d\n", i); }
+		if (!CHECK_CORNER(2, 6, 14)) { printf("2/6/14 Corner invalid, id %d\n", i); }
+		if (!CHECK_CORNER(5, 9, 18)) { printf("5/9/18 Corner invalid, id %d\n", i); }
+		if (!CHECK_CORNER(8, 20, 11)) { printf("8/20/11 Corner invalid, id %d\n", i); }
+
+		#undef CHECK_CORNER
+		#undef CHECK_EDGE
+		#undef GET_STICKER
+	}
+}
