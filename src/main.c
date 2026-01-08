@@ -1,5 +1,6 @@
 #include "cube.h"
 #include "solve.h"
+#include "scan.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +11,8 @@ struct cube *cube;
 enum moves superflip[] = { MOVE_D, MOVE_R2, MOVE_B, MOVE_F, MOVE_R, MOVE_F2, MOVE_R, MOVE_D2, MOVE_L, MOVE_F2, MOVE_R, MOVE_Dp, MOVE_Up, MOVE_R2, MOVE_B, MOVE_Rp, MOVE_L, MOVE_F2, MOVE_D2, MOVE_B2, MOVE_END };
 
 void scramble(void);
+
+void decode_cube(char *argv[]);
 
 int main(int argc, char *argv[])
 {
@@ -25,8 +28,7 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 	} else if (argc == 7) {
-		printf("TODO: Color entry");
-		return -1;
+		decode_cube(argv);
 	} else {
 		printf("Invalid number of arguments\n");
 		return -1;
@@ -53,4 +55,24 @@ void scramble(void)
 		print_move(move);
 	}
 	printf("\n");
+}
+
+void decode_cube(char *argv[])
+{
+	char stickers[54] = { 0 };
+
+	for (int i = 0; i < 6; i++) {
+		char *face = argv[i + 1];
+		if (strlen(face) != 9) {
+			printf("Invalid face: %s\n", face);
+			continue;
+		}
+
+		for (int j = 0; j < 9; j++) {
+			int idx = i*9 + j;
+			stickers[idx] = face[j];
+		}
+	}
+
+	scan_cube(cube, stickers);
 }

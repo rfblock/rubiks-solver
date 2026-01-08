@@ -1,3 +1,4 @@
+# Translate algorithms from Singmaster to C arrays
 with open('superflip.txt') as f:
 	for line in f.readlines():
 		up = 'U'
